@@ -104,7 +104,7 @@ class HeartBeat(object):
         
         self.payload = bytearray(payload, "ascii")
         self.padding = bytearray(0)
-        
+
         return self
 
     def parse(self, p):
@@ -112,6 +112,7 @@ class HeartBeat(object):
         self.pay_len = p.get(2)
         self.payload = p.getFixBytes(self.pay_len)
         self.padding = p.getEndBytes()
+        self.bytes = p.bytes
         return self
 
     def write(self):
@@ -119,8 +120,11 @@ class HeartBeat(object):
         w.add(self.type, 1)
         w.add(self.pay_len, 2)
         w.addBuff(self.payload, self.pay_len)
-        print binascii.hexlify(w.bytes)
+        # print binascii.hexlify(w.bytes)
         return w.bytes
+
+    def output(self):
+        return self.bytes
 
 
 

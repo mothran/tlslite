@@ -229,6 +229,55 @@ class TLSRecordLayer(object):
             self._shutdown(False)
             raise
 
+    def readPOC(self, max=None, min=1):
+        for result in self.readPOCAsync(max, min):
+            pass
+        return result
+
+
+    def readPOCAsync(self, max=None, min=1):
+        """Start a read operation on the TLS connection.
+
+        This function returns a generator which behaves similarly to
+        read().  Successive invocations of the generator will return 0
+        if it is waiting to read from the socket, 1 if it is waiting
+        to write to the socket, or a string if the read operation has
+        completed.
+
+        @rtype: iterable
+        @return: A generator; see above for details.
+        """
+        try:
+            while len(self._readBuffer)<min and not self.closed:
+                try:
+                    for result in self._getMsg(ContentType.heart_beat):
+                        if result in (0,1):
+                            yield result
+                    heart = result
+
+                    self._readBuffer += heart.output()
+
+                except TLSRemoteAlert as alert:
+                    if alert.description != AlertDescription.close_notify:
+                        raise
+                except TLSAbruptCloseError:
+                    if not self.ignoreAbruptClose:
+                        raise
+                    else:
+                        self._shutdown(True)
+
+            if max == None:
+                max = len(self._readBuffer)
+
+            returnBytes = self._readBuffer[:max]
+            self._readBuffer = self._readBuffer[max:]
+            yield bytes(returnBytes)
+        except GeneratorExit:
+            raise
+        except:
+            self._shutdown(False)
+            raise
+
     def unread(self, b):
         """Add bytes to the front of the socket read buffer for future
         reading. Be careful using this in the context of select(...): if you
@@ -676,6 +725,8 @@ class TLSRecordLayer(object):
                         continue
 
                 #If we received an unexpected record type...
+                # print recordHeader.type
+                # print expectedType
                 if recordHeader.type not in expectedType:
 
                     #If we received an alert...
@@ -733,14 +784,6 @@ class TLSRecordLayer(object):
                             for result in self._sendMsg(alertMsg):
                                 yield result
                             continue
-                    if recordHeader.type == ContentType.heart_beat:
-                        heart = HeartBeat().parse(p)
-                        # print heart.type
-                        # print heart.pay_len
-                        print heart.payload[4:]
-                        # print binascii.hexlify(heart.padding)
-                        # print binascii.hexlify(p.bytes)
-                        continue
 
                     #Otherwise: this is an unexpected record, but neither an
                     #alert nor renegotiation
@@ -756,6 +799,8 @@ class TLSRecordLayer(object):
                 yield ChangeCipherSpec().parse(p)
             elif recordHeader.type == ContentType.alert:
                 yield Alert().parse(p)
+            elif recordHeader.type == ContentType.heart_beat:
+                yield HeartBeat().parse(p)
             elif recordHeader.type == ContentType.application_data:
                 yield ApplicationData().parse(p)
             elif recordHeader.type == ContentType.handshake:
