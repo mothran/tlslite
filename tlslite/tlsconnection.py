@@ -1147,7 +1147,7 @@ class TLSConnection(TLSRecordLayer):
         serverHello = ServerHello()
         serverHello.create(self.version, getRandomBytes(32), sessionID, \
                             cipherSuite, CertificateType.x509, tackExt,
-                            nextProtos)
+                            nextProtos, settings.heart_beat)
 
         # Perform the SRP key exchange
         clientCertChain = None

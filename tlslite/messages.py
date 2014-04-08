@@ -212,6 +212,7 @@ class ClientHello(HandshakeMsg):
                         self.supports_npn = True
                     elif extType == ExtensionType.heart_beat:
                         self.heart_beat = True
+                        p.getFixBytes(extLength)
                     elif extType == ExtensionType.server_name:
                         serverNameListBytes = p.getFixBytes(extLength)
                         p2 = Parser(serverNameListBytes)

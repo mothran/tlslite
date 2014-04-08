@@ -23,7 +23,7 @@ Table of Contents
 
 
 HeartBleed POC (CVE-2014-0160)
-
+==============================
 
 In order to use the heartbleed poc, first make sure you have updated or installed the 'python-m2crypto' then run:
 
@@ -32,6 +32,14 @@ python setup.py install
 and finally to run the poc:
 
 python scripts/heartbleed.py -d HOST:PORT -n NUMB_REQS
+
+UPDATE: working client attacks:
+
+first generate a priv key and cert for your mini server (check http://www.devsec.org/info/ssl-cert.html)
+
+then run a script like: (change the locations of your certs obviously)
+python scripts/heartbleed_server.py -d 127.0.0.1:5555 -n 1 -c ./certs/newcert.pem -k certs/privkey.pem
+
 
 
 1 Introduction 
