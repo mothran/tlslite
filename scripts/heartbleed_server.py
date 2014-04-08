@@ -8,7 +8,7 @@ from tlslite.messages import *
 from tlslite import __version__
 
 def usage():
-    print "heartbleed_client.py   PoC for the openSSL heartbleed vulnerability"
+    print "heartbleed_server.py   PoC for the openSSL heartbleed vulnerability"
     print "      -h  --  show this message"
     print "      -n  --  Set the number of requests to make, more will grab more memory"
     print "      -k  --  Set the private key"
