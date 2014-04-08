@@ -259,7 +259,7 @@ class TLSRecordLayer(object):
 
                 except TLSRemoteAlert as alert:
                     if alert.description != AlertDescription.close_notify:
-                        raise
+                        print "ALERT: " + alert.description
                 except TLSAbruptCloseError:
                     if not self.ignoreAbruptClose:
                         raise
