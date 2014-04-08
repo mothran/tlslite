@@ -90,25 +90,33 @@ class Alert(object):
 class HeartBeat(object):
     def __init__(self):
         self.contentType = ContentType.heart_beat
-        self.level = 0
-        self.description = 0
+        self.type = 0
+        self.pay_len = 0
+        self.payload = ""
+        self.padding = ""
 
-    def create(self, description, level=AlertLevel.fatal):
-        self.level = level
-        self.description = description
+    def create(self, type, payload="", padding=""):
+        self.type = type
+        self.pay_len = len(payload)
+        self.payload = payload
+        self.padding = padding
         return self
 
     def parse(self, p):
         p.setLengthCheck(2)
-        self.level = p.get(1)
-        self.description = p.get(1)
+        self.type = p.get(1)
+        self.pay_len = p.get(2)
+        self.payload = p.get(self.pay_len)
+        self.padding = p.get(1) #TODO
         p.stopLengthCheck()
         return self
 
     def write(self):
         w = Writer()
-        w.add(self.level, 1)
-        w.add(self.description, 1)
+        w.add(self.type, 1)
+        w.add(self.pay_len, 2)
+        w.add(self.payload, self.pay_len)
+        w.add(self.padding, len(sel.padding))
         return w.bytes
 
 
@@ -280,7 +288,7 @@ class ServerHello(HandshakeMsg):
         self.next_protos = None
 
     def create(self, version, random, session_id, cipher_suite,
-               certificate_type, tackExt, next_protos_advertised):
+               certificate_type, tackExt, next_protos_advertised, heart_beat):
         self.server_version = version
         self.random = random
         self.session_id = session_id
@@ -288,6 +296,7 @@ class ServerHello(HandshakeMsg):
         self.certificate_type = certificate_type
         self.compression_method = 0
         self.tackExt = tackExt
+        self.heart_beat = heart_beat
         self.next_protos_advertised = next_protos_advertised
         return self
 
@@ -313,7 +322,7 @@ class ServerHello(HandshakeMsg):
                 elif extType == ExtensionType.supports_npn:
                     self.next_protos = self.__parse_next_protos(p.getFixBytes(extLength))
                 elif extType == ExtensionType.heart_beat:
-                    self.heart_beat = True
+                    self.heart_beat = p.getFixBytes(extLength)
                 else:
                     p.getFixBytes(extLength)
                 soFar += 4 + extLength
@@ -361,6 +370,10 @@ class ServerHello(HandshakeMsg):
             w2.add(ExtensionType.tack, 2)
             w2.add(len(b), 2)
             w2.bytes += b
+        if self.heart_beat:
+            w2.add(ExtensionType.heart_beat, 2)
+            w2.add(1, 2)
+            w2.add(1, 1)
         if self.next_protos_advertised is not None:
             encoded_next_protos_advertised = self.__next_protos_encoded()
             w2.add(ExtensionType.supports_npn, 2)

@@ -203,7 +203,7 @@ def clientCmd(argv):
     
     settings = HandshakeSettings()
     settings.useExperimentalTackExtension = True
-    settings.heart_beat = False
+    settings.heart_beat = True
     
     try:
         start = time.clock()
