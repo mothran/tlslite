@@ -1,6 +1,7 @@
 
 tlslite version 0.4.5                                            Mar 20 2013
 Trevor Perrin <tlslite at trevp.net>
+Modified by Parker Thompson
 http://trevp.net/tlslite/
 ============================================================================
 
@@ -19,6 +20,18 @@ Table of Contents
 10 Using TLS Lite with asyncore
 11 SECURITY CONSIDERATIONS
 12 History
+
+
+HeartBleed POC (CVE-2014-0160)
+
+
+In order to use the heartbleed poc, first make sure you have updated or installed the 'python-m2crypto' then run:
+
+python setup.py install
+
+and finally to run the poc:
+
+python scripts/heartbleed.py -d HOST:PORT -n NUMB_REQS
 
 
 1 Introduction 
