@@ -12,5 +12,5 @@ setup(name="tlslite",
       url="http://trevp.net/tlslite/",
       description="tlslite implements SSL and TLS.",
       license="public domain and BSD",
-      scripts=["scripts/tls.py", "scripts/tlsdb.py"],
+      #scripts=["scripts/tls.py", "scripts/tlsdb.py"],
       packages=["tlslite", "tlslite.utils", "tlslite.integration"],)

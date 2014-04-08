@@ -522,7 +522,8 @@ class TLSConnection(TLSRecordLayer):
                                    certificateTypes, 
                                    session.srpUsername,
                                    reqTack, nextProtos is not None,
-                                   session.serverName)
+                                   session.serverName,
+                                   heart_beat=settings.heart_beat)
 
         #Or send ClientHello (without)
         else:
@@ -532,7 +533,8 @@ class TLSConnection(TLSRecordLayer):
                                certificateTypes, 
                                srpUsername,
                                reqTack, nextProtos is not None, 
-                               serverName)
+                               serverName,
+                               heart_beat=settings.heart_beat)
         for result in self._sendMsg(clientHello):
             yield result
         yield clientHello

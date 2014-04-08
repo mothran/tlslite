@@ -87,6 +87,32 @@ class Alert(object):
         return w.bytes
 
 
+class HeartBeat(object):
+    def __init__(self):
+        self.contentType = ContentType.heart_beat
+        self.level = 0
+        self.description = 0
+
+    def create(self, description, level=AlertLevel.fatal):
+        self.level = level
+        self.description = description
+        return self
+
+    def parse(self, p):
+        p.setLengthCheck(2)
+        self.level = p.get(1)
+        self.description = p.get(1)
+        p.stopLengthCheck()
+        return self
+
+    def write(self):
+        w = Writer()
+        w.add(self.level, 1)
+        w.add(self.description, 1)
+        return w.bytes
+
+
+
 class HandshakeMsg(object):
     def __init__(self, handshakeType):
         self.contentType = ContentType.handshake
@@ -111,11 +137,12 @@ class ClientHello(HandshakeMsg):
         self.srp_username = None        # a string
         self.tack = False
         self.supports_npn = False
+        self.heart_beat = False
         self.server_name = bytearray(0)
 
     def create(self, version, random, session_id, cipher_suites,
                certificate_types=None, srpUsername=None,
-               tack=False, supports_npn=False, serverName=None):
+               tack=False, supports_npn=False, serverName=None, heart_beat=False):
         self.client_version = version
         self.random = random
         self.session_id = session_id
@@ -126,6 +153,7 @@ class ClientHello(HandshakeMsg):
             self.srp_username = bytearray(srpUsername, "utf-8")
         self.tack = tack
         self.supports_npn = supports_npn
+        self.heart_beat = heart_beat
         if serverName:
             self.server_name = bytearray(serverName, "utf-8")
         return self
@@ -167,6 +195,8 @@ class ClientHello(HandshakeMsg):
                         self.tack = True
                     elif extType == ExtensionType.supports_npn:
                         self.supports_npn = True
+                    elif extType == ExtensionType.heart_beat:
+                        self.heart_beat = True
                     elif extType == ExtensionType.server_name:
                         serverNameListBytes = p.getFixBytes(extLength)
                         p2 = Parser(serverNameListBytes)
@@ -215,7 +245,11 @@ class ClientHello(HandshakeMsg):
             w2.add(len(self.server_name)+5, 2)
             w2.add(len(self.server_name)+3, 2)            
             w2.add(NameType.host_name, 1)
-            w2.addVarSeq(self.server_name, 1, 2) 
+            w2.addVarSeq(self.server_name, 1, 2)
+        if self.heart_beat:
+            w2.add(ExtensionType.heart_beat, 2)
+            w2.add(1, 2)
+            w2.add(1, 1)         
         if self.tack:
             w2.add(ExtensionType.tack, 2)
             w2.add(0, 2)
@@ -241,6 +275,7 @@ class ServerHello(HandshakeMsg):
         self.certificate_type = CertificateType.x509
         self.compression_method = 0
         self.tackExt = None
+        self.heart_beat = False
         self.next_protos_advertised = None
         self.next_protos = None
 
@@ -277,6 +312,8 @@ class ServerHello(HandshakeMsg):
                     self.tackExt = TackExtension(p.getFixBytes(extLength))
                 elif extType == ExtensionType.supports_npn:
                     self.next_protos = self.__parse_next_protos(p.getFixBytes(extLength))
+                elif extType == ExtensionType.heart_beat:
+                    self.heart_beat = True
                 else:
                     p.getFixBytes(extLength)
                 soFar += 4 + extLength

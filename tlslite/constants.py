@@ -45,6 +45,7 @@ class ExtensionType:    # RFC 6066 / 4366
     cert_type = 9       # RFC 6091
     tack = 0xF300
     supports_npn = 13172
+    heart_beat = 0x000f
     
 class NameType:
     host_name = 0
