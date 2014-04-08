@@ -259,7 +259,8 @@ class TLSRecordLayer(object):
 
                 except TLSRemoteAlert as alert:
                     if alert.description != AlertDescription.close_notify:
-                        print "ALERT: " + alert.description
+                        # print "ALERT: " + alert.description
+                        pass
                 except TLSAbruptCloseError:
                     if not self.ignoreAbruptClose:
                         raise
@@ -787,6 +788,10 @@ class TLSRecordLayer(object):
 
                     #Otherwise: this is an unexpected record, but neither an
                     #alert nor renegotiation
+                    if recordHeader.type == ContentType.application_data:
+                        print "got app data"
+                        continue
+                    
                     for result in self._sendError(\
                             AlertDescription.unexpected_message,
                             "received type=%d" % recordHeader.type):
