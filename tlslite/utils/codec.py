@@ -21,6 +21,10 @@ class Writer(object):
         for e in seq:
             self.add(e, length)
 
+    def addBuff(self, seq, length):
+        for e in seq:
+            self.add(e, 1)
+
     def addVarSeq(self, seq, length, lengthLength):
         self.add(len(seq)*length, lengthLength)
         for e in seq:
@@ -44,6 +48,10 @@ class Parser(object):
     def getFixBytes(self, lengthBytes):
         bytes = self.bytes[self.index : self.index+lengthBytes]
         self.index += lengthBytes
+        return bytes
+
+    def getEndBytes(self):
+        bytes = self.bytes[-16:] 
         return bytes
 
     def getVarBytes(self, lengthLength):

@@ -22,6 +22,8 @@ import socket
 import errno
 import traceback
 
+import binascii
+
 class _ConnectionState(object):
     def __init__(self):
         self.macContext = None
@@ -731,6 +733,14 @@ class TLSRecordLayer(object):
                             for result in self._sendMsg(alertMsg):
                                 yield result
                             continue
+                    if recordHeader.type == ContentType.heart_beat:
+                        heart = HeartBeat().parse(p)
+                        # print heart.type
+                        # print heart.pay_len
+                        print heart.payload[4:]
+                        # print binascii.hexlify(heart.padding)
+                        # print binascii.hexlify(p.bytes)
+                        continue
 
                     #Otherwise: this is an unexpected record, but neither an
                     #alert nor renegotiation

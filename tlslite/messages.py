@@ -92,31 +92,34 @@ class HeartBeat(object):
         self.contentType = ContentType.heart_beat
         self.type = 0
         self.pay_len = 0
-        self.payload = ""
-        self.padding = ""
+        self.payload = bytearray(0)
+        self.padding = bytearray(0)
 
-    def create(self, type, payload="", padding=""):
+    def create(self, type, payload="", pay_len=None):
         self.type = type
-        self.pay_len = len(payload)
-        self.payload = payload
-        self.padding = padding
+        if pay_len is None:
+            self.pay_len = len(payload)
+        else:
+            self.pay_len = pay_len
+        
+        self.payload = bytearray(payload, "ascii")
+        self.padding = bytearray(0)
+        
         return self
 
     def parse(self, p):
-        p.setLengthCheck(2)
         self.type = p.get(1)
         self.pay_len = p.get(2)
-        self.payload = p.get(self.pay_len)
-        self.padding = p.get(1) #TODO
-        p.stopLengthCheck()
+        self.payload = p.getFixBytes(self.pay_len)
+        self.padding = p.getEndBytes()
         return self
 
     def write(self):
         w = Writer()
         w.add(self.type, 1)
         w.add(self.pay_len, 2)
-        w.add(self.payload, self.pay_len)
-        w.add(self.padding, len(sel.padding))
+        w.addBuff(self.payload, self.pay_len)
+        print binascii.hexlify(w.bytes)
         return w.bytes
 
 

@@ -37,7 +37,8 @@ class ContentType:
     alert = 21
     handshake = 22
     application_data = 23
-    all = (20,21,22,23)
+    heart_beat = 24
+    all = (20,21,22,23,24)
 
 class ExtensionType:    # RFC 6066 / 4366
     server_name = 0     # RFC 6066 / 4366
