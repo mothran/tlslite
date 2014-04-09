@@ -789,7 +789,7 @@ class TLSRecordLayer(object):
                     #Otherwise: this is an unexpected record, but neither an
                     #alert nor renegotiation
                     if recordHeader.type == ContentType.application_data:
-                        print "got app data"
+                        # print "got app data"
                         continue
                     
                     for result in self._sendError(\
