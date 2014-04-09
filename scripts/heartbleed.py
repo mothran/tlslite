@@ -12,6 +12,7 @@ def usage():
     print "      -h  --  show this message"
     print "      -d  --  Set the destiation host and port:  HOST:PORT"
     print "      -n  --  Set the number of requests to make, more will grab more memory"
+    print "      -p  --  Attempt to obtain the server's SSL private key"
 
 try:
     opts, args = getopt.getopt(sys.argv[1:], "hd:n:p")
