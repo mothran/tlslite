@@ -236,17 +236,6 @@ class TLSRecordLayer(object):
 
 
     def readPOCAsync(self, max=None, min=1):
-        """Start a read operation on the TLS connection.
-
-        This function returns a generator which behaves similarly to
-        read().  Successive invocations of the generator will return 0
-        if it is waiting to read from the socket, 1 if it is waiting
-        to write to the socket, or a string if the read operation has
-        completed.
-
-        @rtype: iterable
-        @return: A generator; see above for details.
-        """
         try:
             while len(self._readBuffer)<min and not self.closed:
                 try:
