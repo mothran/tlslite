@@ -15,9 +15,10 @@ def usage():
     print "      -n  --  Set the number of requests to make, more will grab more memory"
     print "      -p  --  Attempt to obtain the server's SSL private key"
     print "      -c  --  Attempt to find any cookie values in mem, paramter should be HTTP header ex: -c 'Cookie:'"
+    print "      -s  --  set the servername extension."
 
 try:
-    opts, args = getopt.getopt(sys.argv[1:], "hd:n:c:pr")
+    opts, args = getopt.getopt(sys.argv[1:], "hd:n:c:s:pr")
 except getopt.GetoptError as err:
     print str(err)
     usage()
@@ -29,6 +30,7 @@ find_priv_key = False
 cookie_val = "Cookie:"
 find_cookie = False
 find_base = False
+servername = None
 
 for o, a in opts:
     if o == "-d":
@@ -48,6 +50,8 @@ for o, a in opts:
     elif o == "-c":
         find_cookie = True
         cookie_val = a
+    elif o == "-s":
+        servername = a
     else:
         assert False, "unhandled option"
 
@@ -62,7 +66,7 @@ settings.heart_beat = True
 
 try:
     start = time.clock()
-    connection.handshakeClientCert(None, None, settings=settings, serverName=address[0])
+    connection.handshakeClientCert(None, None, settings=settings, serverName=servername)
 
     stop = time.clock()        
 except TLSLocalAlert as a:
